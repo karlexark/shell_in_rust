@@ -31,7 +31,7 @@ fn main() {
             command_list[3] => {
                 let mut exist = false
                 for i in 0..command_list.len(){
-                    if words[1] = command_list[i]{
+                    if words[1] == command_list[i]{
                         println("{} is a shell builtin", words[1]);
                         exist = true
                         break;
