@@ -18,7 +18,7 @@ fn main() {
         let words: Vec<&str> = input.split_whitespace().collect();
         match words[0]{
             "quit" => break,
-            "exit 0" => return,
+            "exit" => return,
             "echo" => println!("{}",words[1..].join(" ")),
             string => println!("{}: command not found", string),
         }
