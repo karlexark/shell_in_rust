@@ -12,7 +12,7 @@ fn main() {
         
         io::stdin().read_line(&mut input).unwrap();
         match input.trim(){
-            "exit 0" => break,
+            "exit 0" => return,
             string => println!("{}: command not found", string),
         }
     }
