@@ -16,10 +16,32 @@ fn main() {
             continue;
         }
         let words: Vec<&str> = input.split_whitespace().collect();
+        let command_list = ["quit","exit","echo","type"]
         match words[0]{
-            "quit" => break,
-            "exit" => return,
-            "echo" => println!("{}",words[1..].join(" ")),
+            command_list[0] =>break,
+            command_list[1] => return,
+            command_list[2] => {
+                if words.len() > 1 {
+                    println!("{}",words[1..].join(" "));
+                }else{
+                    println!(" ");
+                }
+                
+            },
+            command_list[3] => {
+                let mut exist = false
+                for i in 0..command_list.len(){
+                    if words[1] = command_list[i]{
+                        println("{} is a shell builtin", words[1]);
+                        exist = true
+                        break;
+                    }
+                } 
+                if !exist{
+                    println!("{}: not found");
+                }
+
+            }
             string => println!("{}: command not found", string),
         }
     }
