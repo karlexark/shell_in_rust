@@ -16,5 +16,6 @@ fn main() {
             "exit 0" => return,
             string => println!("{}: command not found", string),
         }
+        input = String::new();
     }
 }
