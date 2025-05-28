@@ -5,9 +5,10 @@ fn main() {
     // Uncomment this block to pass the first stage
     print!("$ ");
     io::stdout().flush().unwrap();
-
+    loop{
     // Wait for user input
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
-    println!("{}: command not found",input.trim());
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+        println!("{}: command not found",input.trim());
+    }
 }
