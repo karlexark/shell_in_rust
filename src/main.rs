@@ -14,7 +14,7 @@ fn main() {
         match input.trim(){
             "quit" => break,
             "exit 0" => return,
-            "echo " => println!(input[5..-1]),
+            "echo " => println!("{}",input[5..-1]),
             string => println!("{}: command not found", string),
         }
         input = String::new();
