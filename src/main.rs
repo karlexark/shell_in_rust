@@ -1,11 +1,11 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
 use std::path::Path;
-use std::fs;
+
 use std::os::unix::fs::PermissionsExt;
 
 fn main() {
-    let path_value = std::env::var("PATH");
+    let path_value = std::env::var("PATH").unwrap();
     let paths: Vec<&str> = path_value.split(':').collect();
     loop{   
         print!("$ ");
