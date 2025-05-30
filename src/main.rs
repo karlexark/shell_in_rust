@@ -33,7 +33,7 @@ fn cmd_echo(args: &[&str]){
     println!("{}",args.join(" "));
 }
 
-fn cmd_type(args: &[&str],paths: &Vec<&str>){
+fn cmd_type(args: &[&str],paths: Vec<&str>){
     let args_len = args.len();
 
     match args_len{
