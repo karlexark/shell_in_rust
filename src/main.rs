@@ -51,7 +51,7 @@ fn cmd_type(args: &[&str],paths: &Vec<&str>){
                                 //let mode = meta.permissions().mode();
                                 //if mode & 0o111 !=0{
                                 found = true;
-                                println!("{} is {}",args[0],dir);
+                                println!("{} is {}",args[0],full_path);
                                 break;
                                 //}
                             }
