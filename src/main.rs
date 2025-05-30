@@ -18,7 +18,7 @@ fn main() {
         let words: Vec<&str> = input.split_whitespace().collect();
         match words.as_slice(){
             [""] => continue,
-            ["exit",0] => return, // exit
+            ["exit","0"] => return, 
             ["echo", args @ ..] => cmd_echo(args),
             ["type", args @ ..] => cmd_type(args),
         }
