@@ -108,5 +108,4 @@ fn run_external(program_path: &str, args:&[&str]) -> io::Result<ExitStatus> {
             e
         });
 
-        Ok(child)
 }
