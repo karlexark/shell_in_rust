@@ -21,6 +21,7 @@ fn main() {
             ["exit","0"] => return, 
             ["echo", args @ ..] => cmd_echo(args),
             ["type", args @ ..] => cmd_type(args),
+            _ => println!("{}: command not found",input),
         }
     }
 }
@@ -34,16 +35,16 @@ fn cmd_type(args: &[&str]){
 
     match args_len{
         0 => return,
-        >1 => {
-            println!("type : too many arguments");
-            return;
-        },
-        _ =>{
+        1 =>{
             match args[0]{
                 "exit" | "echo" | "type" => println!("{}: is a shell builtin", args[0]),
                 _ => println!("{}: not found",args[0]),
             }
-        }
+        },
+        _ => {
+            println!("type : too many arguments");
+            return;
+        },
 
     }
 }
