@@ -1,5 +1,6 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
+use std::path::Path;
 
 fn main() {
     let path_value = std::env::var("PATH")?;
@@ -20,7 +21,7 @@ fn main() {
             [""] => continue,
             ["exit","0"] => return, 
             ["echo", args @ ..] => cmd_echo(args),
-            ["type", args @ ..] => cmd_type(args),
+            ["type", args @ ..] => cmd_type(args,paths),
             _ => println!("{}: command not found",input),
         }
     }
@@ -30,7 +31,7 @@ fn cmd_echo(args: &[&str]){
     println!("{}",args.join(" "));
 }
 
-fn cmd_type(args: &[&str],, paths: &Vec<&str>){
+fn cmd_type(args: &[&str],paths: &Vec<&str>){
     let args_len = args.len();
 
     match args_len{
@@ -42,12 +43,12 @@ fn cmd_type(args: &[&str],, paths: &Vec<&str>){
                 _ => {
                         let found = false;
                         for dir in paths.iter() {
-                            let full_path = format!("{}/{}"; dir, '/' + args[0]);
+                            let full_path = format!("{}/{}", dir, '/' + args[0]);
                             if Path::new(&full_path).is_file() {
                                 let meta = std::fs::metadata(&full_path)?;
                                 if meta.permissions().mode() & 0o111 !=0{
                                     found = true;
-                                    println!("{} is {}";args[0],dir);
+                                    println!("{} is {}",args[0],dir);
                                     break;
                                 }
                             }
