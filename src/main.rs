@@ -2,8 +2,6 @@
 use std::io::{self, Write};
 use std::path::Path;
 
-use std::os::unix::fs::PermissionsExt;
-
 fn main() {
     let path_value = std::env::var("PATH").unwrap();
     let paths: Vec<&str> = path_value.split(':').collect();
@@ -40,7 +38,7 @@ fn cmd_type(args: &[&str],paths: &Vec<&str>){
         0 => return,
         1 =>{
             match args[0]{
-                "exit" | "echo" | "type" => println!("{}: is a shell builtin", args[0]),
+                "exit" | "echo" | "type" => println!("{} is a shell builtin", args[0]),
 
                 _ => {
                         let mut found = false;
