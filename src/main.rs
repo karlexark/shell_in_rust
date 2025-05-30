@@ -43,7 +43,7 @@ fn cmd_type(args: &[&str],paths: &Vec<&str>){
                 "exit" | "echo" | "type" => println!("{}: is a shell builtin", args[0]),
 
                 _ => {
-                        let found = false;
+                        let mut found = false;
                         for dir in paths.iter() {
                             let full_path = format!("{}/{}/{}", dir, "/" , args[0]);
                             if Path::new(&full_path).is_file() {
