@@ -1,30 +1,52 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
 use std::path::Path;
-use std::process::{Command, ExitStatus};
+use std::process::Command;
+use rustyline_derive::{Helper, Completer, Hinter, Highlighter, Validator};
+use rustyline::Editor;
+use rustyline::error::ReadlineError;
+use rustyline::Helper;
+use rustyline::history::DefaultHistory;
 
 fn main() {
+    let mut editor = Editor::<HelpTab,DefaultHistory>::new().unwrap();
+    let helper = HelpTab::new();
+    editor.set_helper(Some(helper));
     let path_value = std::env::var("PATH").unwrap();
     let paths: Vec<&str> = path_value.split(':').collect();
     loop{   
-        print!("$ ");
-        io::stdout().flush().unwrap();
+        // print!("$ ");
+        // io::stdout().flush().unwrap();
     
     // Wait for user input
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).unwrap();
-        let input = input.trim();
-        if input.is_empty(){
-            continue;
+        // let mut input = String::new();
+        // io::stdin().read_line(&mut input).unwrap();
+        let line = editor.readline("$ ");
+        match line{
+            Ok(sline)=> {
+                editor.add_history_entry(sline.as_str());
+                let input = sline.trim();
+                if input.is_empty(){
+                    continue;
+                }
+                let words: Vec<&str> = input.split_whitespace().collect();
+                match words.as_slice(){
+                    [""] => continue,
+                    ["exit","0"] => return, 
+                    ["echo", args @ ..] => cmd_echo(args),
+                    ["type", args @ ..] => cmd_type(args,&paths),
+                    _ => cmd_ext(&words,&paths),
+                }
+            }
+            Err(ReadlineError::Interrupted) => continue,
+            Err(ReadlineError::Eof)=> return,
+            Err(err)=>{
+                eprintln!("Reading error : {}",err);
+                return;
+            },
+            
         }
-        let words: Vec<&str> = input.split_whitespace().collect();
-        match words.as_slice(){
-            [""] => continue,
-            ["exit","0"] => return, 
-            ["echo", args @ ..] => cmd_echo(args),
-            ["type", args @ ..] => cmd_type(args,&paths),
-            _ => cmd_ext(&words,&paths),
-        }
+        
     }
 }
 
@@ -97,7 +119,25 @@ fn cmd_ext(args: &[&str],paths: &Vec<&str>){
 }
 
 fn run_external(program_name: &str, args:&[&str]) {
-    let mut cmd = Command::new(program_name)
+    let _cmd = Command::new(program_name)
         .args(args)
         .status();
 }
+#[derive(Helper,Completer,Hinter,Highlighter,Validator)]
+pub struct HelpTab{
+    builtins: Vec<String>,
+}
+impl HelpTab {
+    pub fn new() -> Self{
+        Self{
+            builtins: vec![
+                "echo".to_string(),
+                "exit".to_string(),
+                "type".to_string(),
+            ],
+        }
+    }
+    
+}
+
+
