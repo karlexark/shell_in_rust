@@ -16,7 +16,7 @@ fn main() {
             continue;
         }
         let words: Vec<&str> = input.split_whitespace().collect();
-        let command_list = ["quit","exit","echo","type"];
+        let command_list : [str;4]= ["quit","exit","echo","type"];
         match words[0]{
             command_list[0] =>break, // quit
             command_list[1] => return, // exit
