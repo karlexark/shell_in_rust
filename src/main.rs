@@ -23,7 +23,7 @@ fn main() {
             ["exit","0"] => return, 
             ["echo", args @ ..] => cmd_echo(args),
             ["type", args @ ..] => cmd_type(args,&paths),
-            _ => println!("{}: command not found",input),
+            _ => cmd_ext(&words,&paths),
         }
     }
 }
@@ -101,7 +101,7 @@ fn run_external(program_path: &str, args:&[&str]) {
 
     cmd.args(args);
 
-    let mut child = cmd
+    let child = cmd
         .spawn()
         .map_err(|e| {
             eprintln!("Execution failed : {}",e);
