@@ -45,7 +45,7 @@ fn cmd_type(args: &[&str],paths: &Vec<&str>){
                 _ => {
                         let mut found = false;
                         for dir in paths.iter() {
-                            let full_path = format!("{}/{}/{}", dir, "/" , args[0]);
+                            let full_path = format!("{}/{}", dir, args[0]);
                             if Path::new(&full_path).is_file() {
                                 //let meta = std::fs::metadata(&full_path);
                                 //let mode = meta.permissions().mode();
