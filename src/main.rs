@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
 use std::path::Path;
+use std::process::{Command, ExitStatus};
 
 fn main() {
     let path_value = std::env::var("PATH").unwrap();
@@ -68,3 +69,57 @@ fn cmd_type(args: &[&str],paths: &Vec<&str>){
     }
 }
 
+fn cmd_ext(args: &[&str],paths: &Vec<&str>){
+    let args_len = args.len();
+    match args_len{
+        0 => return;
+        _ => {
+            
+            let mut found = false;
+            for dir in paths.iter() {
+                let full_path = format!("{}/{}", dir, args[0]);
+                if Path::new(&full_path).is_file() {
+                    //let meta = std::fs::metadata(&full_path);
+                    //let mode = meta.permissions().mode();
+                    //if mode & 0o111 !=0{
+                    found = true;
+                    let status = run_external(full_path,&args[1..]);
+                    if !status.sucess(){
+                        eprintln!("Program return with an error : {:?}",
+                            full_path,
+                            status.code()
+                        );
+                    }
+                    break;
+                    //}
+                }
+            }
+            if !found {
+                println!("{}: not found", args[0]);
+            }
+
+        }
+    }
+}
+
+fn run_external(program_path: &str, args:&[&str]) -> io::Result<ExitStatus> {
+    let mut cmd = Command::new(program_path);
+
+    cmd.args(args);
+
+    let mut child = cmd
+        .spawn()
+        .map_err(|e| {
+            eprintln!("Execution failed : {}",e);
+            e
+        });
+
+        let status = child
+            .wait()
+            .map_err(|e|{
+                eprintln!("Error while waiting the child : {}",e);
+                e
+            });
+    
+    Ok(status)
+}
