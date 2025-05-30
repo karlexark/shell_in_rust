@@ -1,10 +1,12 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
 use std::path::Path;
+use std::fs;
+use std::os::unix::fs::PermissionsExt;
 
 fn main() {
     let path_value = std::env::var("PATH");
-    let paths : Vec<&str> = path_value.split(":").collect();
+    let paths: Vec<&str> = path_value.split(':').collect();
     loop{   
         print!("$ ");
         io::stdout().flush().unwrap();
@@ -42,7 +44,7 @@ fn cmd_type(args: &[&str],paths: &Vec<&str>){
 
                 _ => {
                         let found = false;
-                        for dir in &paths {
+                        for dir in paths.iter() {
                             let full_path = format!("{}/{}/{}", dir, "/" , args[0]);
                             if Path::new(&full_path).is_file() {
                                 let meta = std::fs::metadata(&full_path);
