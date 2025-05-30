@@ -18,9 +18,9 @@ fn main() {
         let words: Vec<&str> = input.split_whitespace().collect();
         let command_list = ["quit","exit","echo","type"]
         match words[0]{
-            command_list[0] =>break,
-            command_list[1] => return,
-            command_list[2] => {
+            command_list[0] =>break, // quit
+            command_list[1] => return, // exit
+            command_list[2] => { //echo
                 if words.len() > 1 {
                     println!("{}",words[1..].join(" "));
                 }else{
@@ -28,7 +28,8 @@ fn main() {
                 }
                 
             },
-            command_list[3] => {
+            command_list[3] => { // type
+                
                 let mut exist = false
                 for i in 0..command_list.len(){
                     if words[1] == command_list[i]{
@@ -38,7 +39,7 @@ fn main() {
                     }
                 } 
                 if !exist{
-                    println!("{}: not found");
+                    println!("{}: not found",words[1]);
                 }
 
             }
