@@ -72,7 +72,7 @@ fn cmd_type(args: &[&str],paths: &Vec<&str>){
 fn cmd_ext(args: &[&str],paths: &Vec<&str>){
     let args_len = args.len();
     match args_len{
-        0 => return;
+        0 => return,
         _ => {
             
             let mut found = false;
@@ -83,13 +83,7 @@ fn cmd_ext(args: &[&str],paths: &Vec<&str>){
                     //let mode = meta.permissions().mode();
                     //if mode & 0o111 !=0{
                     found = true;
-                    let status = run_external(full_path,&args[1..]);
-                    if !status.sucess(){
-                        eprintln!("Program return with an error : {:?}",
-                            full_path,
-                            status.code()
-                        );
-                    }
+                    let status = run_external(&full_path,&args[1..]);
                     break;
                     //}
                 }
@@ -114,12 +108,5 @@ fn run_external(program_path: &str, args:&[&str]) -> io::Result<ExitStatus> {
             e
         });
 
-        let status = child
-            .wait()
-            .map_err(|e|{
-                eprintln!("Error while waiting the child : {}",e);
-                e
-            });
-    
-    Ok(status)
+        Ok(child)
 }
