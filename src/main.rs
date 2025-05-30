@@ -2,8 +2,8 @@
 use std::io::{self, Write};
 
 fn main() {
-    // Uncomment this block to pass the first stage
-    
+    let path_value = std::env::var("PATH")?;
+    let paths : Vec<&str> = path_value.split(':');
     loop{   
         print!("$ ");
         io::stdout().flush().unwrap();
@@ -30,7 +30,7 @@ fn cmd_echo(args: &[&str]){
     println!("{}",args.join(" "));
 }
 
-fn cmd_type(args: &[&str]){
+fn cmd_type(args: &[&str],, paths: &Vec<&str>){
     let args_len = args.len();
 
     match args_len{
@@ -38,7 +38,24 @@ fn cmd_type(args: &[&str]){
         1 =>{
             match args[0]{
                 "exit" | "echo" | "type" => println!("{}: is a shell builtin", args[0]),
-                _ => println!("{}: not found",args[0]),
+
+                _ => {
+                        let found = false;
+                        for dir in paths.iter() {
+                            let full_path = format!("{}/{}"; dir, '/' + args[0]);
+                            if Path::new(&full_path).is_file() {
+                                let meta = std::fs::metadata(&full_path)?;
+                                if meta.permissions().mode() & 0o111 !=0{
+                                    found = true;
+                                    println!("{} is {}";args[0],dir);
+                                    break;
+                                }
+                            }
+                        }
+                        if !found {
+                            println!("{}: not found", args[0]);
+                        }
+                }
             }
         },
         _ => {
@@ -48,3 +65,4 @@ fn cmd_type(args: &[&str]){
 
     }
 }
+
