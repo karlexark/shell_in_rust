@@ -83,7 +83,7 @@ fn cmd_ext(args: &[&str],paths: &Vec<&str>){
                     //let mode = meta.permissions().mode();
                     //if mode & 0o111 !=0{
                     found = true;
-                    run_external(&full_path,&args[1..]);
+                    run_external(&args[0],&args[1..]);
                     break;
                     //}
                 }
@@ -96,8 +96,8 @@ fn cmd_ext(args: &[&str],paths: &Vec<&str>){
     }
 }
 
-fn run_external(program_path: &str, args:&[&str]) {
-    let mut cmd = Command::new(program_path)
+fn run_external(program_name: &str, args:&[&str]) {
+    let mut cmd = Command::new(program_name)
         .args(args)
         .status();
 }
