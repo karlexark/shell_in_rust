@@ -97,15 +97,7 @@ fn cmd_ext(args: &[&str],paths: &Vec<&str>){
 }
 
 fn run_external(program_path: &str, args:&[&str]) {
-    let mut cmd = Command::new(program_path);
-
-    cmd.args(args);
-
-    let child = cmd
-        .spawn()
-        .map_err(|e| {
-            eprintln!("Execution failed : {}",e);
-            e
-        });
-
+    let mut cmd = Command::new(program_path)
+        .args(args)
+        .status();
 }
