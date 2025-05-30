@@ -3,8 +3,8 @@ use std::io::{self, Write};
 use std::path::Path;
 
 fn main() {
-    let path_value = std::env::var("PATH")?;
-    let paths : Vec<&str> = path_value.split(':');
+    let path_value = std::env::var("PATH");
+    let paths : Vec<&str> = path_value.split(':').collect();
     loop{   
         print!("$ ");
         io::stdout().flush().unwrap();
@@ -42,11 +42,12 @@ fn cmd_type(args: &[&str],paths: &Vec<&str>){
 
                 _ => {
                         let found = false;
-                        for dir in paths.iter() {
-                            let full_path = format!("{}/{}", dir, '/' + args[0]);
+                        for dir in &paths.iter() {
+                            let full_path = format!("{}/{}", dir, "/" + args[0]);
                             if Path::new(&full_path).is_file() {
-                                let meta = std::fs::metadata(&full_path)?;
-                                if meta.permissions().mode() & 0o111 !=0{
+                                let meta = std::fs::metadata(&full_path);
+                                let mode = meta.permissions().mode();
+                                if mode & 0o111 !=0{
                                     found = true;
                                     println!("{} is {}",args[0],dir);
                                     break;
