@@ -16,34 +16,34 @@ fn main() {
             continue;
         }
         let words: Vec<&str> = input.split_whitespace().collect();
-        let command_list = ["quit","exit","echo","type"];
-        match words[0]{
-            "quit" =>break, // quit
-            "exit" => return, // exit
-            "echo" => { //echo
-                if words.len() > 1 {
-                    println!("{}",words[1..].join(" "));
-                }else{
-                    println!(" ");
-                }
-                
-            },
-            "type" => { // type
-                
-                let mut exist = false;
-                for i in 0..command_list.len(){
-                    if words[1] == command_list[i]{
-                        println!("{} is a shell builtin", words[1]);
-                        exist = true;
-                        break;
-                    };
-                } ;
-                if !exist{
-                    println!("{}: not found",words[1]);
-                }
-
-            }
-            string => println!("{}: command not found", string),
+        match words.as_slice(){
+            [""] => continue,
+            ["exit",0] => return, // exit
+            ["echo", args @ ..] => cmd_echo(args),
+            ["type", args @ ..] => cmd_type(args),
         }
+    }
+}
+
+fn cmd_echo(args: &[&str]){
+    println!("{}",args.join(" "));
+}
+
+fn cmd_type(args: &[&str]){
+    let args_len = args.len();
+
+    match args_len{
+        0 => return,
+        >1 => {
+            println!("type : too many arguments");
+            return;
+        },
+        _ =>{
+            match args[0]{
+                "exit" | "echo" | "type" => println!("{}: is a shell builtin", args[0]),
+                _ => println!("{}: not found",args[0]),
+            }
+        }
+
     }
 }
