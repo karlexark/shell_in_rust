@@ -47,8 +47,8 @@ fn cmd_type(args: &[&str],paths: &Vec<&str>){
                         for dir in paths.iter() {
                             let full_path = format!("{}/{}/{}", dir, "/" , args[0]);
                             if Path::new(&full_path).is_file() {
-                                let meta = std::fs::metadata(&full_path);
-                                let mode = meta.permissions().mode();
+                                //let meta = std::fs::metadata(&full_path);
+                                //let mode = meta.permissions().mode();
                                 //if mode & 0o111 !=0{
                                 found = true;
                                 println!("{} is {}",args[0],dir);
