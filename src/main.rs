@@ -213,13 +213,11 @@ impl rustyline::completion::Completer for HelpTab{
 fn search_match(prefixe: &String,helper : &HelpTab)->Result<(u64, Vec<Pair>), Error>{
     let mut nb_match :u64 = 0;
     let mut suggestions : Vec<Pair> = Vec::new();
-    let mut all_suggestions : String = "".to_string();
     if !(prefixe ==""){
         for builtin in &helper.builtins{
             if builtin.starts_with(prefixe) {
                 nb_match = nb_match + 1;
             
-                all_suggestions = all_suggestions + &builtin.to_string() + "  ";
                 let suggestion = Pair{
                     display : builtin.clone(),
                     replacement : format!("{} ", builtin),
@@ -243,11 +241,11 @@ fn search_match(prefixe: &String,helper : &HelpTab)->Result<(u64, Vec<Pair>), Er
                 if let Some(file_name) = file_name_os.to_str(){
                     if file_name.starts_with(prefixe) {
                         nb_match = nb_match + 1;
-                        all_suggestions = &file_name.to_string()+ "  " + all_suggestions ;
                         let suggestion = Pair{
                             display : file_name.to_string().clone(),
                             replacement : format!("{} ", file_name),
                         };
+                        //TODO comprendre pourquoi la liste ets inversé par rapport à ce qui est attendu par codecrafter
                         suggestions.push(suggestion);
                     }
                 }      
