@@ -243,7 +243,7 @@ fn search_match(prefixe: &String,helper : &HelpTab)->Result<(u64, Vec<Pair>), Er
                 if let Some(file_name) = file_name_os.to_str(){
                     if file_name.starts_with(prefixe) {
                         nb_match = nb_match + 1;
-                        all_suggestions = all_suggestions + &file_name.to_string()+ "  ";
+                        all_suggestions = &file_name.to_string()+ "  " + all_suggestions ;
                         let suggestion = Pair{
                             display : file_name.to_string().clone(),
                             replacement : format!("{} ", file_name),
