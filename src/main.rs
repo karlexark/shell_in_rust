@@ -3,7 +3,7 @@ use std::cell::{Cell, RefCell};
 use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
-use std::{usize, vec};
+use std::{array, usize, vec};
 use anyhow::Error;
 use rustyline::completion::Pair;
 use rustyline_derive::{Helper, Hinter, Highlighter, Validator};
@@ -190,18 +190,18 @@ impl rustyline::completion::Completer for HelpTab{
                     },
                     _ => {
                         let mut all_suggestion : String ="".to_string();
+                        let mut suggestions_list : Vec<String> = Vec::new();
                         for suggestion in suggestions{
-                            all_suggestion = all_suggestion + &suggestion.display + "  ";
+                            suggestions_list.push(suggestion.display);
+                        }
+                        suggestions_list.sort();
+                        for suggestion in suggestions_list{
+                            all_suggestion = all_suggestion + &suggestion + "  ";
                         }
                         println!("\n{}",all_suggestion);
                         std::io::stdout().flush().unwrap();
-                        let reset = Pair{
-                            replacement: "".to_string(),
-                            display: "".to_string(),
-                        };
-                        let mut resets = Vec::new();
-                        resets.push(reset);
-                        return Ok((start, resets));
+                        
+                        return Ok((start, Vec::new()));
                     }
                 }
             }
