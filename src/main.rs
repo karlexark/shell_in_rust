@@ -254,6 +254,7 @@ fn search_match(prefixe: &String,helper : &HelpTab)->Result<(u64, Vec<Pair>), Er
             }
         }
         if nb_match !=0{
+            eprint!("il croit y a pas 0");
             return Ok((nb_match,suggestions));
         }
         let path_value = std::env::var("PATH").unwrap();
