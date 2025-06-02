@@ -1,7 +1,11 @@
+use std::fmt::format;
 #[allow(unused_imports)]
 use std::io::{self, Write};
+use std::ops::Index;
 use std::path::Path;
 use std::process::Command;
+use std::vec;
+use rustyline::completion::Pair;
 use rustyline_derive::{Helper, Completer, Hinter, Highlighter, Validator};
 use rustyline::Editor;
 use rustyline::error::ReadlineError;
@@ -32,7 +36,7 @@ fn main() {
                 let words: Vec<&str> = input.split_whitespace().collect();
                 match words.as_slice(){
                     [""] => continue,
-                    ["exit","0"] => return, 
+                    ["exit"] => return, 
                     ["echo", args @ ..] => cmd_echo(args),
                     ["type", args @ ..] => cmd_type(args,&paths),
                     _ => cmd_ext(&words,&paths),
@@ -123,7 +127,7 @@ fn run_external(program_name: &str, args:&[&str]) {
         .args(args)
         .status();
 }
-#[derive(Helper,Completer,Hinter,Highlighter,Validator)]
+#[derive(Helper,Hinter,Highlighter,Validator)]
 pub struct HelpTab{
     builtins: Vec<String>,
 }
@@ -138,6 +142,51 @@ impl HelpTab {
         }
     }
     
+}
+
+impl rustyline::completion::Completer for HelpTab{
+    type Candidate = rustyline::completion::Pair;
+    fn complete(
+            &self, // FIXME should be `&mut self`
+            line: &str,
+            pos: usize,
+            _ctx: &rustyline::Context<'_>,
+        ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
+
+            let start : usize;
+            let (avant,_) = line.split_at(pos);
+            let maybe_space_pos= avant.rfind(' ');
+            let mut prefixe : String = "".to_string();
+            
+            if maybe_space_pos == None{
+                start= 0;
+                prefixe = avant[0..pos].to_string();
+            }else{
+                let space_pos = maybe_space_pos.unwrap();
+                start = space_pos+1;
+                prefixe = avant[start..pos].to_string();
+            }
+
+            let mut nb_match :u64 = 0;
+            let mut suggestions : Vec<Pair> = Vec::new();
+            for builtin in &self.builtins{
+                if builtin.starts_with(&prefixe) {
+                    nb_match = nb_match + 1;
+                    if nb_match >1{
+                        return Ok((start, Vec::new()));
+                    }else {
+                        let suggestion = Pair{
+                            display : builtin.clone(),
+                            replacement : format!("{} ", builtin),
+                        };
+                        suggestions.push(suggestion);
+                    }
+                }
+            }
+            return Ok((start,suggestions));
+            
+ 
+    }
 }
 
 
