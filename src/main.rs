@@ -200,8 +200,13 @@ impl rustyline::completion::Completer for HelpTab{
                         }
                         println!("\n{}",all_suggestion);
                         std::io::stdout().flush().unwrap();
-                        
-                        return Ok((start, Vec::new()));
+                        let pref = Pair{
+                            display: prefixe.clone(),
+                            replacement: prefixe.clone(),
+                        };
+                        let mut l_pref = Vec::new();
+                        l_pref.push(pref);
+                        return Ok((start, l_pref));
                     }
                 }
             }
@@ -227,30 +232,30 @@ fn search_match(prefixe: &String,helper : &HelpTab)->Result<(u64, Vec<Pair>), Er
                 
             }
         }
-        let path_value = std::env::var("PATH").unwrap();
-        let paths: Vec<&str> = path_value.split(':').collect();
+        // let path_value = std::env::var("PATH").unwrap();
+        // let paths: Vec<&str> = path_value.split(':').collect();
         
-        for dir in paths.iter() {
-            let files = std::fs::read_dir(dir).unwrap();
-            for file_result in files{
-                let file = match file_result{
-                    Ok(e) => e,
-                    Err(_) => continue,
-                };
-                let file_name_os = file.file_name();
-                if let Some(file_name) = file_name_os.to_str(){
-                    if file_name.starts_with(prefixe) {
-                        nb_match = nb_match + 1;
-                        let suggestion = Pair{
-                            display : file_name.to_string().clone(),
-                            replacement : format!("{} ", file_name),
-                        };
-                        //TODO comprendre pourquoi la liste ets inversé par rapport à ce qui est attendu par codecrafter
-                        suggestions.push(suggestion);
-                    }
-                }      
-            }
-        }
+        // for dir in paths.iter() {
+        //     let files = std::fs::read_dir(dir).unwrap();
+        //     for file_result in files{
+        //         let file = match file_result{
+        //             Ok(e) => e,
+        //             Err(_) => continue,
+        //         };
+        //         let file_name_os = file.file_name();
+        //         if let Some(file_name) = file_name_os.to_str(){
+        //             if file_name.starts_with(prefixe) {
+        //                 nb_match = nb_match + 1;
+        //                 let suggestion = Pair{
+        //                     display : file_name.to_string().clone(),
+        //                     replacement : format!("{} ", file_name),
+        //                 };
+        //                 //TODO comprendre pourquoi la liste ets inversé par rapport à ce qui est attendu par codecrafter
+        //                 suggestions.push(suggestion);
+        //             }
+        //         }      
+        //     }
+        // }
         match nb_match  {
             1 => return Ok((nb_match,suggestions)),
             0 => return Ok((nb_match, Vec::new())),
