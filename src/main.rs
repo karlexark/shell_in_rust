@@ -1,15 +1,15 @@
-use std::fmt::format;
 #[allow(unused_imports)]
+use std::cell::{Cell, RefCell};
 use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
-use std::vec;
+use std::{usize, vec};
+use anyhow::Error;
 use rustyline::completion::Pair;
 use rustyline_derive::{Helper, Hinter, Highlighter, Validator};
 use rustyline::Editor;
 use rustyline::error::ReadlineError;
 use rustyline::history::DefaultHistory;
-
 fn main() {
     let mut editor = Editor::<HelpTab,DefaultHistory>::new().unwrap();
     let helper = HelpTab::new();
@@ -125,6 +125,8 @@ fn run_external(program_name: &str, args:&[&str]) {
 #[derive(Helper,Hinter,Highlighter,Validator)]
 pub struct HelpTab{
     builtins: Vec<String>,
+    last_prefix : RefCell<String>,
+    already_tab : Cell<bool>,
 }
 impl HelpTab {
     pub fn new() -> Self{
@@ -134,6 +136,9 @@ impl HelpTab {
                 "exit".to_string(),
                 "type".to_string(),
             ],
+            last_prefix : RefCell::new(String::new()),
+            already_tab : Cell::new(false),
+
         }
     }
     
@@ -152,7 +157,8 @@ impl rustyline::completion::Completer for HelpTab{
             let (avant,_) = line.split_at(pos);
             let maybe_space_pos= avant.rfind(' ');
             let mut prefixe : String = "".to_string();
-            
+            let nb_match : u64;
+            let mut suggestions : Vec<Pair> = Vec::new();
             if maybe_space_pos == None{
                 start= 0;
                 prefixe = avant[0..pos].to_string();
@@ -161,59 +167,102 @@ impl rustyline::completion::Completer for HelpTab{
                 start = space_pos+1;
                 prefixe = avant[start..pos].to_string();
             }
+            (nb_match,suggestions) = search_match(&prefixe, self).unwrap();
+            if !self.already_tab.get() {
+                self.last_prefix.replace(prefixe.clone());
+                self.already_tab.set(false);
+                match nb_match as i32 {
+                    0..=1 => {
+                        return Ok((start,suggestions));
 
-            let mut nb_match :u64 = 0;
-            let mut suggestions : Vec<Pair> = Vec::new();
-            for builtin in &self.builtins{
-                if builtin.starts_with(&prefixe) {
-                    nb_match = nb_match + 1;
-                    if nb_match >1{
+                    },
+                    _ => {
+                        self.already_tab.set(true);
                         return Ok((start, Vec::new()));
-                    }else {
-                        let suggestion = Pair{
-                            display : builtin.clone(),
-                            replacement : format!("{} ", builtin),
-                        };
-                        suggestions.push(suggestion);
-                        
                     }
                 }
-            }
-            if nb_match == 0{
-                let path_value = std::env::var("PATH").unwrap();
-                let paths: Vec<&str> = path_value.split(':').collect();
-                
-                for dir in paths.iter() {
-                    let files = std::fs::read_dir(dir).unwrap();
-                    for file_result in files{
-                        let file = match file_result{
-                            Ok(e) => e,
-                            Err(_) => continue,
-                        };
-                        let file_name_os = file.file_name();
-                        if let Some(file_name) = file_name_os.to_str(){
-                            if file_name.starts_with(&prefixe) {
-                            nb_match = nb_match + 1;
-                                if nb_match >1{
-                                    return Ok((start, Vec::new()));
-                                }else {
-                                    let suggestion = Pair{
-                                        display : file_name.to_string().clone(),
-                                        replacement : format!("{} ", file_name),
-                                    };
-                                    suggestions.push(suggestion);
-                                }
-                            }
-                        }
+            }else{
+                self.already_tab.set(false);
+                match nb_match as i32  {
+                    0..=1 => {
+                        return Ok((start,suggestions));
 
-                            
+                    },
+                    _ => {
+                        let mut all_suggestion : String ="".to_string();
+                        for suggestion in suggestions{
+                            all_suggestion = all_suggestion + &suggestion.display + "  ";
+                        }
+                        println!("\n{}",all_suggestion);
+                        std::io::stdout().flush().unwrap();
+                        let reset = Pair{
+                            replacement: "".to_string(),
+                            display: "".to_string(),
+                        };
+                        let mut resets = Vec::new();
+                        resets.push(reset);
+                        return Ok((start, resets));
                     }
                 }
             }
-            return Ok((start,suggestions));
             
- 
     }
 }
 
 
+fn search_match(prefixe: &String,helper : &HelpTab)->Result<(u64, Vec<Pair>), Error>{
+    let mut nb_match :u64 = 0;
+    let mut suggestions : Vec<Pair> = Vec::new();
+    let mut all_suggestions : String = "".to_string();
+    if !(prefixe ==""){
+        for builtin in &helper.builtins{
+            if builtin.starts_with(prefixe) {
+                nb_match = nb_match + 1;
+            
+                all_suggestions = all_suggestions + &builtin.to_string() + "  ";
+                let suggestion = Pair{
+                    display : builtin.clone(),
+                    replacement : format!("{} ", builtin),
+                };
+                suggestions.push(suggestion);
+                    
+                
+            }
+        }
+        // let path_value = std::env::var("PATH").unwrap();
+        // let paths: Vec<&str> = path_value.split(':').collect();
+        
+        // for dir in paths.iter() {
+        //     let files = std::fs::read_dir(dir).unwrap();
+        //     for file_result in files{
+        //         let file = match file_result{
+        //             Ok(e) => e,
+        //             Err(_) => continue,
+        //         };
+        //         let file_name_os = file.file_name();
+        //         if let Some(file_name) = file_name_os.to_str(){
+        //             if file_name.starts_with(prefixe) {
+        //                 nb_match = nb_match + 1;
+        //                 all_suggestions = all_suggestions + &file_name.to_string()+ "  ";
+        //                 let suggestion = Pair{
+        //                     display : file_name.to_string().clone(),
+        //                     replacement : format!("{} ", file_name),
+        //                 };
+        //                 suggestions.push(suggestion);
+        //             }
+        //         }      
+        //     }
+        // }
+        match nb_match  {
+            1 => return Ok((nb_match,suggestions)),
+            0 => return Ok((nb_match, Vec::new())),
+            _ =>{
+                return Ok((nb_match, suggestions));
+            },
+        }
+    }
+    return Ok((0 as u64, Vec::new()));
+
+
+
+}
