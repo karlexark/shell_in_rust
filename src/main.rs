@@ -1,9 +1,9 @@
 #[allow(unused_imports)]
 use std::cell::{Cell, RefCell};
-use std::io::{self, Write};
+use std::io::{Write};
 use std::path::Path;
 use std::process::Command;
-use std::{array, usize, vec};
+use std::{usize, vec};
 use anyhow::Error;
 use rustyline::completion::Pair;
 use rustyline_derive::{Helper, Hinter, Highlighter, Validator};
@@ -26,7 +26,7 @@ fn main() {
         let line = editor.readline("$ ");
         match line{
             Ok(sline)=> {
-                editor.add_history_entry(sline.as_str());
+                _= editor.add_history_entry(sline.as_str());
                 let input = sline.trim();
                 if input.is_empty(){
                     continue;
@@ -133,6 +133,9 @@ impl HelpTab {
         Self{
             builtins: vec![
                 "echo".to_string(),
+                "echo_type".to_string(),
+                "echo_type_exit".to_string(),
+                "echo_type_exit_return".to_string(),
                 "exit".to_string(),
                 "type".to_string(),
             ],
@@ -156,9 +159,9 @@ impl rustyline::completion::Completer for HelpTab{
             let start : usize;
             let (avant,_) = line.split_at(pos);
             let maybe_space_pos= avant.rfind(' ');
-            let mut prefixe : String = "".to_string();
+            let prefixe : String ;
             let nb_match : u64;
-            let mut suggestions : Vec<Pair> = Vec::new();
+            let suggestions : Vec<Pair>;
             if maybe_space_pos == None{
                 start= 0;
                 prefixe = avant[0..pos].to_string();
@@ -171,16 +174,36 @@ impl rustyline::completion::Completer for HelpTab{
             if !self.already_tab.get() {
                 self.last_prefix.replace(prefixe.clone());
                 self.already_tab.set(false);
+                let exist: bool;
+                let every_match_list :Vec<String>;
                 match nb_match as i32 {
                     0..=1 => {
                         return Ok((start,suggestions));
 
                     },
                     _ => {
-                        self.already_tab.set(true);
-                        return Ok((start, Vec::new()));
-                    }
+                        let mut list = Vec::new();
+                        for suggestion in &suggestions{
+                            list.push(&suggestion.display);
+                        }
+                        (exist,every_match_list) = match_in_a_vec(list).unwrap();
+                        if exist==true{
+                            let rempl = Pair{
+                                display: every_match_list[0].clone(),
+                                replacement: format!("{}",every_match_list[0].clone()),
+                            };
+                            let mut l_rempl = Vec::new();
+                            l_rempl.push(rempl);
+                            return Ok((start,l_rempl));
+                        }else{
+                            self.already_tab.set(true);
+                            return Ok((start, Vec::new())) ;
+                        }
+                            
+                    },
+                        
                 }
+                
             }else{
                 self.already_tab.set(false);
                 match nb_match as i32  {
@@ -233,30 +256,29 @@ fn search_match(prefixe: &String,helper : &HelpTab)->Result<(u64, Vec<Pair>), Er
         if nb_match !=0{
             return Ok((nb_match,suggestions));
         }
-        let path_value = std::env::var("PATH").unwrap();
-        let paths: Vec<&str> = path_value.split(':').collect();
+        // let path_value = std::env::var("PATH").unwrap();
+        // let paths: Vec<&str> = path_value.split(':').collect();
         
-        for dir in paths.iter() {
-            let files = std::fs::read_dir(dir).unwrap();
-            for file_result in files{
-                let file = match file_result{
-                    Ok(e) => e,
-                    Err(_) => continue,
-                };
-                let file_name_os = file.file_name();
-                if let Some(file_name) = file_name_os.to_str(){
-                    if file_name.starts_with(prefixe) {
-                        nb_match = nb_match + 1;
-                        let suggestion = Pair{
-                            display : file_name.to_string().clone(),
-                            replacement : format!("{} ", file_name),
-                        };
-                        //TODO comprendre pourquoi la liste ets inversé par rapport à ce qui est attendu par codecrafter
-                        suggestions.push(suggestion);
-                    }
-                }      
-            }
-        }
+        // for dir in paths.iter() {
+        //     let files = std::fs::read_dir(dir).unwrap();
+        //     for file_result in files{
+        //         let file = match file_result{
+        //             Ok(e) => e,
+        //             Err(_) => continue,
+        //         };
+        //         let file_name_os = file.file_name();
+        //         if let Some(file_name) = file_name_os.to_str(){
+        //             if file_name.starts_with(prefixe) {
+        //                 nb_match = nb_match + 1;
+        //                 let suggestion = Pair{
+        //                     display : file_name.to_string().clone(),
+        //                     replacement : format!("{} ", file_name),
+        //                 };
+        //                 suggestions.push(suggestion);
+        //             }
+        //         }      
+        //     }
+        // }
         match nb_match  {
             1 => return Ok((nb_match,suggestions)),
             0 => return Ok((nb_match, Vec::new())),
@@ -269,4 +291,31 @@ fn search_match(prefixe: &String,helper : &HelpTab)->Result<(u64, Vec<Pair>), Er
 
 
 
+}
+
+fn match_in_a_vec(list: Vec<&String>) -> Result<(bool,Vec<String>),Error>{
+    let mut every_match_list =Vec::new();
+    let mut every_match = true;
+    let exist: bool;
+    let mut fixed_trame;
+    for trame in &list{
+        fixed_trame = trame;
+        for test in &list{
+            if !test.starts_with(&trame.to_string()){
+                every_match = false;
+                break;
+            }
+        }
+        if every_match == true{
+            
+            every_match_list.push(fixed_trame.to_string().clone());
+        }
+    }
+    if every_match_list.len()!=0{
+        exist = true;
+    }else {
+        exist = false;
+    }
+
+    return Ok((exist,every_match_list));
 }
