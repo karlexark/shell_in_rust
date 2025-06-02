@@ -228,9 +228,10 @@ fn search_match(prefixe: &String,helper : &HelpTab)->Result<(u64, Vec<Pair>), Er
                     replacement : format!("{} ", builtin),
                 };
                 suggestions.push(suggestion);
-                    
-                
             }
+        }
+        if nb_match !=0{
+            return Ok((nb_match,suggestions));
         }
         let path_value = std::env::var("PATH").unwrap();
         let paths: Vec<&str> = path_value.split(':').collect();
