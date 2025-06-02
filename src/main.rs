@@ -1,15 +1,13 @@
 use std::fmt::format;
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::ops::Index;
 use std::path::Path;
 use std::process::Command;
 use std::vec;
 use rustyline::completion::Pair;
-use rustyline_derive::{Helper, Completer, Hinter, Highlighter, Validator};
+use rustyline_derive::{Helper, Hinter, Highlighter, Validator};
 use rustyline::Editor;
 use rustyline::error::ReadlineError;
-use rustyline::Helper;
 use rustyline::history::DefaultHistory;
 
 fn main() {
@@ -105,9 +103,6 @@ fn cmd_ext(args: &[&str],paths: &Vec<&str>){
             for dir in paths.iter() {
                 let full_path = format!("{}/{}", dir, args[0]);
                 if Path::new(&full_path).is_file() {
-                    //let meta = std::fs::metadata(&full_path);
-                    //let mode = meta.permissions().mode();
-                    //if mode & 0o111 !=0{
                     found = true;
                     run_external(&args[0],&args[1..]);
                     break;
@@ -180,6 +175,38 @@ impl rustyline::completion::Completer for HelpTab{
                             replacement : format!("{} ", builtin),
                         };
                         suggestions.push(suggestion);
+                        
+                    }
+                }
+            }
+            if nb_match == 0{
+                let path_value = std::env::var("PATH").unwrap();
+                let paths: Vec<&str> = path_value.split(':').collect();
+                
+                for dir in paths.iter() {
+                    let files = std::fs::read_dir(dir).unwrap();
+                    for file_result in files{
+                        let file = match file_result{
+                            Ok(e) => e,
+                            Err(_) => continue,
+                        };
+                        let file_name_os = file.file_name();
+                        if let Some(file_name) = file_name_os.to_str(){
+                            if file_name.starts_with(&prefixe) {
+                            nb_match = nb_match + 1;
+                                if nb_match >1{
+                                    return Ok((start, Vec::new()));
+                                }else {
+                                    let suggestion = Pair{
+                                        display : file_name.to_string().clone(),
+                                        replacement : format!("{} ", file_name),
+                                    };
+                                    suggestions.push(suggestion);
+                                }
+                            }
+                        }
+
+                            
                     }
                 }
             }
