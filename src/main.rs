@@ -201,6 +201,7 @@ impl rustyline::completion::Completer for HelpTab{
                             list.push(&suggestion.display);
                         }
                         (exist,every_match_list) = match_in_a_vec(list).unwrap();
+                        print!("{}",exist);
                         if exist==true{
                             let rempl = Pair{
                                 display: every_match_list[0].clone(),
