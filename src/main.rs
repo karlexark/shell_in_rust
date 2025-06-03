@@ -13,7 +13,6 @@ use rustyline::Editor;
 use rustyline::error::ReadlineError;
 use rustyline::history::{DefaultHistory, FileHistory, History,};
 use std::env;
-use dirs::home_dir;
 
 
 fn main() {
@@ -173,7 +172,7 @@ fn cmd_ext(args: &[&str],paths: &Vec<String>){
             
             let mut found = false;
             for dir in paths.iter() {
-                let full_path = format!("{}/{}", dir, args[0]);
+                let full_path = format!("{}\\{}", dir, args[0]);
                 if Path::new(&full_path).is_file() {
                     found = true;
                     run_external(&args[0],&args[1..]);
@@ -182,7 +181,7 @@ fn cmd_ext(args: &[&str],paths: &Vec<String>){
                 }
             }
             if !found {
-                println!("{}: not found", args[0]);
+                println!("{}: programmme not found", args[0]);
             }
 
         }
@@ -230,7 +229,6 @@ impl HelpTab {
     
 }
 
-//TODO comprendre pourquoi l'autocompletion ne fonctionne pas avec les exe externes 
 impl rustyline::completion::Completer for HelpTab{
     type Candidate = rustyline::completion::Pair;
     fn complete(
