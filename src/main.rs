@@ -190,7 +190,6 @@ impl rustyline::completion::Completer for HelpTab{
                 self.already_tab.set(false);
                 let exist: bool;
                 let every_match_list :Vec<String>;
-                eprint!("{}", nb_match);
                 match nb_match as i32 {
                     0..=1 => {
                         return Ok((start,suggestions));
@@ -202,7 +201,6 @@ impl rustyline::completion::Completer for HelpTab{
                             list.push(&suggestion.display);
                         }
                         (exist,every_match_list) = match_in_a_vec(list).unwrap();
-                        eprint!("{}",exist);
                         if exist==true{
                             let rempl = Pair{
                                 display: every_match_list[0].clone(),
@@ -221,7 +219,6 @@ impl rustyline::completion::Completer for HelpTab{
                 }
                 
             }else{
-                print!("test");
                 self.already_tab.set(false);
                 match nb_match as i32  {
                     0..=1 => {
@@ -303,6 +300,7 @@ fn search_match(
                     if let Some(stem_str) = stem_os.to_str() {
                         // stem_str = "fichier"
                         if stem_str.starts_with(prefixe) {
+                            eprint!("{}", stem_str);
                             nb_match += 1;
                             suggestions.push(Pair {
                                 display: stem_str.to_string(),
