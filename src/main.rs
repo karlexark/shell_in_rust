@@ -147,9 +147,6 @@ impl HelpTab {
         Self{
             builtins: vec![
                 "echo".to_string(),
-                "echo_type".to_string(),
-                "echo_type_exit".to_string(),
-                "echo_type_exit_return".to_string(),
                 "exit".to_string(),
                 "type".to_string(),
             ],
