@@ -56,14 +56,21 @@ fn main() {
                         if args.is_empty(){
                             cmd_history(0, &editor);
                         }else if args.len() >1 {
-                            println!("Trop d'arguments donnés pour history, réesayez avec un seul argument ")
+                            println!("Trop d'arguments donnés pour history, réessayez avec un seul argument.")
                         }else if let Ok(n)  = args[0].parse::<usize>() {
                             cmd_history(n,&editor);
                         }else{
-                            println!("{} n'est pas un argument valide pour history",args[0] )
+                            println!("{} n'est pas un argument valide pour history.",args[0] )
                         }
                         
                     },
+                    ["pwd",args@..] => {
+                        if !args.is_empty(){
+                            println!("Cette commande ne prend aucun argument en entrée");
+                        }else{
+                            cmd_pwd();
+                        }
+                    }
                     _ => cmd_ext(&words,&paths), // if its not in the builtin we send the line into a external command function
                 }
             }
@@ -93,7 +100,7 @@ fn cmd_type(args: &[&str],paths: &Vec<String>){
         0 => return, // if there is nothing (the user only wrote type) we return and on the terminal will print the next line 
         1 =>{ // if there is one arg
             match args[0]{
-                "exit" | "echo" | "type" | "history" => println!("{} is a shell builtin", args[0]), // fisrt we look into the builtins list
+                "exit" | "echo" | "type" | "history" | "pwd" => println!("{} is a shell builtin", args[0]), // fisrt we look into the builtins list
 
                 _ => {// if its not we gonna look into the dir to find if the command exist 
                         let mut found = false;
@@ -126,6 +133,13 @@ fn cmd_history(n : usize,edit : &Editor<HelpTab,FileHistory>){
             println!("{}  {}", i, entry);
         }
     }
+}
+
+fn cmd_pwd(){
+   match std::env::current_dir(){
+        Ok(path) => println!("{}",path.display()),
+        Err(e) => eprintln!("Erreur lors de l'exécution de pwd : {}", e),
+   }
 }
 
 fn cmd_ext(args: &[&str],paths: &Vec<String>){
@@ -171,6 +185,7 @@ impl HelpTab {
                 "exit".to_string(),
                 "type".to_string(),
                 "history".to_string(),
+                "pwd".to_string(),
             ],
             last_prefix : RefCell::new(String::new()),
             already_tab : Cell::new(false),
