@@ -185,7 +185,7 @@ impl rustyline::completion::Completer for HelpTab{
                 prefixe = avant[start..pos].to_string();
             }
             (nb_match,suggestions) = search_match(&prefixe, self).unwrap();
-            if !self.already_tab.get() || !(*self.last_prefix.borrow() == prefixe){
+            if (!(self.already_tab.get()) )|| (!(*self.last_prefix.borrow() == prefixe)){
                 self.last_prefix.replace(prefixe.clone());
                 self.already_tab.set(false);
                 let exist: bool;
