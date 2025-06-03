@@ -171,7 +171,7 @@ impl rustyline::completion::Completer for HelpTab{
         ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
 
             let start : usize;
-            print!("ohhhhhhhhhhh");
+            eprint!("ohhhhhhhhhhh");
             let (avant,_) = line.split_at(pos);
             let maybe_space_pos= avant.rfind(' ');
             let prefixe : String ;
