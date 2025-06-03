@@ -322,10 +322,11 @@ fn search_match(
 
 fn match_in_a_vec(list: Vec<&String>) -> Result<(bool,Vec<String>),Error>{
     let mut every_match_list =Vec::new();
-    let mut every_match = true;
+    let mut every_match ;
     let exist: bool;
     let mut fixed_trame;
     for trame in &list{
+        every_match = true;
         fixed_trame = trame;
         for test in &list{
             if !test.starts_with(&trame.to_string()){
@@ -334,7 +335,6 @@ fn match_in_a_vec(list: Vec<&String>) -> Result<(bool,Vec<String>),Error>{
             }
         }
         if every_match == true{
-            eprint!("{}",fixed_trame);
             every_match_list.push(fixed_trame.to_string().clone());
         }
     }
