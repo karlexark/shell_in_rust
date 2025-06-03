@@ -221,6 +221,7 @@ impl rustyline::completion::Completer for HelpTab{
                 }
                 
             }else{
+                print!("test");
                 self.already_tab.set(false);
                 match nb_match as i32  {
                     0..=1 => {
