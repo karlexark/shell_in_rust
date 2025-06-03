@@ -188,7 +188,7 @@ fn cmd_ext(args: &[&str],paths: &Vec<String>){
 
 fn cmd_cd(path : &str){
     if let Err(_e) = std::env::set_current_dir(path){
-        eprintln!("cd : {}: No such file or directory",path);
+        eprintln!("cd: {}: No such file or directory",path);
     }
 }
 
