@@ -171,7 +171,6 @@ impl rustyline::completion::Completer for HelpTab{
         ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
 
             let start : usize;
-            eprint!("ohhhhhhhhhhh");
             let (avant,_) = line.split_at(pos);
             let maybe_space_pos= avant.rfind(' ');
             let prefixe : String ;
@@ -191,7 +190,7 @@ impl rustyline::completion::Completer for HelpTab{
                 self.already_tab.set(false);
                 let exist: bool;
                 let every_match_list :Vec<String>;
-                print!("{}", nb_match);
+                eprint!("{}", nb_match);
                 match nb_match as i32 {
                     0..=1 => {
                         return Ok((start,suggestions));
@@ -203,7 +202,7 @@ impl rustyline::completion::Completer for HelpTab{
                             list.push(&suggestion.display);
                         }
                         (exist,every_match_list) = match_in_a_vec(list).unwrap();
-                        print!("{}",exist);
+                        eprint!("{}",exist);
                         if exist==true{
                             let rempl = Pair{
                                 display: every_match_list[0].clone(),
