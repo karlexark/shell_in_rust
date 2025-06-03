@@ -190,6 +190,7 @@ impl rustyline::completion::Completer for HelpTab{
                 self.already_tab.set(false);
                 let exist: bool;
                 let every_match_list :Vec<String>;
+                print!("{}", nb_match);
                 match nb_match as i32 {
                     0..=1 => {
                         return Ok((start,suggestions));
