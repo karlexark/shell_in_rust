@@ -81,7 +81,7 @@ fn cmd_type(args: &[&str],paths: &Vec<String>){
         0 => return, // if there is nothing (the user only wrote type) we return and on the terminal will print the next line 
         1 =>{ // if there is one arg
             match args[0]{
-                "exit" | "echo" | "type" => println!("{} is a shell builtin", args[0]), // fisrt we look into the builtins list
+                "exit" | "echo" | "type" | "history" => println!("{} is a shell builtin", args[0]), // fisrt we look into the builtins list
 
                 _ => {// if its not we gonna look into the dir to find if the command exist 
                         let mut found = false;
@@ -149,6 +149,7 @@ impl HelpTab {
                 "echo".to_string(),
                 "exit".to_string(),
                 "type".to_string(),
+                "history".to_string(),
             ],
             last_prefix : RefCell::new(String::new()),
             already_tab : Cell::new(false),
