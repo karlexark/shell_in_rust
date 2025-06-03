@@ -185,7 +185,6 @@ impl rustyline::completion::Completer for HelpTab{
                 prefixe = avant[start..pos].to_string();
             }
             (nb_match,suggestions) = search_match(&prefixe, self).unwrap();
-            print!("{}",suggestions[0].display);
             if !self.already_tab.get() || !(*self.last_prefix.borrow() == prefixe){
                 self.last_prefix.replace(prefixe.clone());
                 self.already_tab.set(false);
@@ -299,7 +298,6 @@ fn search_match(
                 let path = Path::new(os_name);         
                 if let Some(stem_os) = path.file_stem() {
                     if let Some(stem_str) = stem_os.to_str() {
-                        print!("{}", stem_str.to_string());
                         // stem_str = "fichier"
                         if stem_str.starts_with(prefixe) {
                             nb_match += 1;
@@ -329,7 +327,6 @@ fn match_in_a_vec(list: Vec<&String>) -> Result<(bool,Vec<String>),Error>{
     let mut fixed_trame;
     for trame in &list{
         fixed_trame = trame;
-        eprintln!("{}", fixed_trame);
         for test in &list{
             if !test.starts_with(&trame.to_string()){
                 every_match = false;
