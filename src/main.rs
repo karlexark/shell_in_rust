@@ -49,7 +49,17 @@ fn main() {
                 let words: Vec<&str> = input.split_whitespace().collect(); // split the line by space to get the words
                 match words.as_slice(){ // reading the line by slice 
                     [""] => continue, // its not suppose to be usefull but still we never know
-                    ["exit","0"] => return,  // if its "exit 0" we stop the programme by exiting the main (i prefer only exit but its for codecrafters)
+                    ["exit",args@..] =>{
+                        if args.len() >1 {
+                            println!("Trop d'argument donnés pour l'utilisation d'exit");
+                        }else if args.is_empty(){
+                            return;
+                        }else if args[0] == "0"{
+                            return;
+                        }else{
+                            println!("{} n'est pas un argument reconnu par exit.",args[0])
+                        }
+                    }   
                     ["echo", args @ ..] => cmd_echo(args), // if the first word is echo i inject the rest of the line in the echo function
                     ["type", args @ ..] => cmd_type(args,&paths), // same with type but we also need the path for external commande
                     ["history", args@..] => {
@@ -71,6 +81,16 @@ fn main() {
                             cmd_pwd();
                         }
                     }
+                    ["cd", args@..] =>{
+                        if args.is_empty(){
+                            continue;
+                        }else if args.len()>1{
+                            println!("Trop d'arguments donnés pour cd")
+                        }else{
+                            cmd_cd(args[0]);
+                        }
+                        
+                    },
                     _ => cmd_ext(&words,&paths), // if its not in the builtin we send the line into a external command function
                 }
             }
@@ -100,7 +120,7 @@ fn cmd_type(args: &[&str],paths: &Vec<String>){
         0 => return, // if there is nothing (the user only wrote type) we return and on the terminal will print the next line 
         1 =>{ // if there is one arg
             match args[0]{
-                "exit" | "echo" | "type" | "history" | "pwd" => println!("{} is a shell builtin", args[0]), // fisrt we look into the builtins list
+                "exit" | "echo" | "type" | "history" | "pwd" | "cd"=> println!("{} is a shell builtin", args[0]), // fisrt we look into the builtins list
 
                 _ => {// if its not we gonna look into the dir to find if the command exist 
                         let mut found = false;
@@ -166,6 +186,12 @@ fn cmd_ext(args: &[&str],paths: &Vec<String>){
     }
 }
 
+fn cmd_cd(path : &str){
+    if let Err(_e) = std::env::set_current_dir(path){
+        eprintln!("cd : {}: No such file or directory",path);
+    }
+}
+
 fn run_external(program_name: &str, args:&[&str]) {
     let _cmd = Command::new(program_name)
         .args(args)
@@ -186,6 +212,7 @@ impl HelpTab {
                 "type".to_string(),
                 "history".to_string(),
                 "pwd".to_string(),
+                "cd".to_string(),
             ],
             last_prefix : RefCell::new(String::new()),
             already_tab : Cell::new(false),
@@ -194,6 +221,7 @@ impl HelpTab {
     }
     
 }
+
 //TODO comprendre pourquoi l'autocompletion ne fonctionne pas avec les exe externes 
 impl rustyline::completion::Completer for HelpTab{
     type Candidate = rustyline::completion::Pair;
