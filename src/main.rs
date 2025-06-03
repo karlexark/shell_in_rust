@@ -53,7 +53,9 @@ fn main() {
                     ["echo", args @ ..] => cmd_echo(args), // if the first word is echo i inject the rest of the line in the echo function
                     ["type", args @ ..] => cmd_type(args,&paths), // same with type but we also need the path for external commande
                     ["history", args@..] => {
-                        if args.len() >1 {
+                        if args.is_empty(){
+                            cmd_history(0, &editor);
+                        }else if args.len() >1 {
                             println!("Trop d'arguments donnés pour history, réesayez avec un seul argument ")
                         }else if let Ok(n)  = args[0].parse::<usize>() {
                             cmd_history(n,&editor);
@@ -61,7 +63,7 @@ fn main() {
                             println!("{} n'est pas un argument valide pour history",args[0] )
                         }
                         
-                    }
+                    },
                     _ => cmd_ext(&words,&paths), // if its not in the builtin we send the line into a external command function
                 }
             }
@@ -120,7 +122,7 @@ fn cmd_type(args: &[&str],paths: &Vec<String>){
 fn cmd_history(n : usize,edit : &Editor<HelpTab,FileHistory>){
 
     for (i, entry) in edit.history().iter().enumerate() {
-        if i>= edit.history().len() -n {
+        if i>= edit.history().len() -n || n==0{
             println!("{}  {}", i, entry);
         }
     }
