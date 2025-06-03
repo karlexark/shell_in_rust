@@ -328,15 +328,13 @@ fn match_in_a_vec(list: Vec<&String>) -> Result<(bool,Vec<String>),Error>{
     for trame in &list{
         fixed_trame = trame;
         for test in &list{
-            eprintln!(" {} : {} ", fixed_trame,test);
             if !test.starts_with(&trame.to_string()){
-                eprintln!("pas égal");
                 every_match = false;
                 break;
             }
         }
         if every_match == true{
-            
+            eprint!("{}",fixed_trame);
             every_match_list.push(fixed_trame.to_string().clone());
         }
     }
