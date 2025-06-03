@@ -327,9 +327,10 @@ fn match_in_a_vec(list: Vec<&String>) -> Result<(bool,Vec<String>),Error>{
     let mut fixed_trame;
     for trame in &list{
         fixed_trame = trame;
-        eprint!("{} ", fixed_trame);
         for test in &list{
+            eprintln!(" {} : {} ", fixed_trame,test);
             if !test.starts_with(&trame.to_string()){
+                eprintln!("pas égal");
                 every_match = false;
                 break;
             }
