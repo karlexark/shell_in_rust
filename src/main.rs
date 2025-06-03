@@ -7,10 +7,11 @@ use std::process::Command;
 use std::{usize, vec};
 use anyhow::Error;
 use rustyline::completion::Pair;
+use rustyline::config::Configurer;
 use rustyline_derive::{Helper, Hinter, Highlighter, Validator};
 use rustyline::Editor;
 use rustyline::error::ReadlineError;
-use rustyline::history::{DefaultHistory, FileHistory, History};
+use rustyline::history::{DefaultHistory, FileHistory, History,};
 use std::env;
 
 
@@ -19,6 +20,7 @@ fn main() {
     let mut editor = Editor::<HelpTab,DefaultHistory>::new().unwrap();
     let helper = HelpTab::new();
     editor.set_helper(Some(helper));
+    _= editor.set_history_ignore_dups(false);
     // recuperation of the path thanks to the key path who is given by the codecrafters tester
     let path_value = env::var_os("PATH").unwrap(); 
     let dirs = env::split_paths(&path_value);
