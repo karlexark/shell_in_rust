@@ -10,7 +10,7 @@ use rustyline::completion::Pair;
 use rustyline_derive::{Helper, Hinter, Highlighter, Validator};
 use rustyline::Editor;
 use rustyline::error::ReadlineError;
-use rustyline::history::{DefaultHistory, FileHistory};
+use rustyline::history::{DefaultHistory, FileHistory, History};
 use std::env;
 
 
@@ -52,7 +52,16 @@ fn main() {
                     ["exit","0"] => return,  // if its "exit 0" we stop the programme by exiting the main (i prefer only exit but its for codecrafters)
                     ["echo", args @ ..] => cmd_echo(args), // if the first word is echo i inject the rest of the line in the echo function
                     ["type", args @ ..] => cmd_type(args,&paths), // same with type but we also need the path for external commande
-                    ["history"] => cmd_history(&editor),
+                    ["history", args@..] => {
+                        if args.len() >1 {
+                            println!("Trop d'arguments donnés pour history, réesayez avec un seul argument ")
+                        }else if let Ok(n)  = args[0].parse::<usize>() {
+                            cmd_history(n,&editor);
+                        }else{
+                            println!("{} n'est pas un argument valide pour history",args[0] )
+                        }
+                        
+                    }
                     _ => cmd_ext(&words,&paths), // if its not in the builtin we send the line into a external command function
                 }
             }
@@ -108,9 +117,12 @@ fn cmd_type(args: &[&str],paths: &Vec<String>){
     }
 }
 
-fn cmd_history(edit : &Editor<HelpTab,FileHistory>){
+fn cmd_history(n : usize,edit : &Editor<HelpTab,FileHistory>){
+
     for (i, entry) in edit.history().iter().enumerate() {
-        println!("{}  {}", i, entry);
+        if i>= edit.history().len() -n {
+            println!("{}  {}", i, entry);
+        }
     }
 }
 
