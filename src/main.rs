@@ -13,6 +13,7 @@ use rustyline::Editor;
 use rustyline::error::ReadlineError;
 use rustyline::history::{DefaultHistory, FileHistory, History,};
 use std::env;
+use dirs::home_dir;
 
 
 fn main() {
@@ -89,7 +90,7 @@ fn main() {
                         }else if args.len()>1{
                             println!("Trop d'arguments donnés pour cd")
                         }else{
-                            cmd_cd(args[0]);
+                            cmd_cd(args[0].to_string());
                         }
                         
                     },
@@ -188,8 +189,13 @@ fn cmd_ext(args: &[&str],paths: &Vec<String>){
     }
 }
 
-fn cmd_cd(path : &str){
-    if let Err(_e) = std::env::set_current_dir(path){
+fn cmd_cd(mut path : String){
+    if path == "~"{
+        if let Some(pathbuf) = dirs::home_dir() {
+             path = pathbuf.to_string_lossy().to_string();
+        }
+    }
+    if let Err(_e) = std::env::set_current_dir(&path){
         eprintln!("cd: {}: No such file or directory",path);
     }
 }
