@@ -300,7 +300,6 @@ fn search_match(
                     if let Some(stem_str) = stem_os.to_str() {
                         // stem_str = "fichier"
                         if stem_str.starts_with(prefixe) {
-                            eprint!("{}", stem_str);
                             nb_match += 1;
                             suggestions.push(Pair {
                                 display: stem_str.to_string(),
@@ -328,6 +327,7 @@ fn match_in_a_vec(list: Vec<&String>) -> Result<(bool,Vec<String>),Error>{
     let mut fixed_trame;
     for trame in &list{
         fixed_trame = trame;
+        eprint!("{} ", fixed_trame);
         for test in &list{
             if !test.starts_with(&trame.to_string()){
                 every_match = false;
