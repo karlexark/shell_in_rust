@@ -21,7 +21,6 @@ fn main() {
     let helper = HelpTab::new();
     editor.set_helper(Some(helper));
     _= editor.set_history_ignore_dups(false);
-    // recuperation of the path thanks to the key path who is given by the codecrafters tester
     let path_value = env::var_os("PATH").unwrap(); 
     let dirs = env::split_paths(&path_value);
     let mut paths = Vec::new();
@@ -52,53 +51,53 @@ fn main() {
                 match words.as_slice(){ // reading the line by slice 
                     [""] => continue, // its not suppose to be usefull but still we never know
                     ["exit",args@..] =>{
-                        if args.len() >1 {
+                        if args.len() >1 { //exit is not suppose to get more than one argument so we handle this case 
                             println!("Trop d'argument donnés pour l'utilisation d'exit");
-                        }else if args.is_empty(){
+                        }else if args.is_empty(){ // if its only write "exit" its ok thats work for me 
                             return;
-                        }else if args[0] == "0"{
+                        }else if args[0] == "0"{ //its also work with exit 0
                             return;
-                        }else{
+                        }else{ // in the other case we print an error msg 
                             println!("{} n'est pas un argument reconnu par exit.",args[0])
                         }
                     }   
                     ["echo", args @ ..] => cmd_echo(args), // if the first word is echo i inject the rest of the line in the echo function
                     ["type", args @ ..] => cmd_type(args,&paths), // same with type but we also need the path for external commande
-                    ["history", args@..] => {
-                        if args.is_empty(){
+                    ["history", args@..] => { //hsitory command handler
+                        if args.is_empty(){ // if there is no argument that means we wxant to see all the history, so we put a 0 in the function and the function will understand
                             cmd_history(0, &editor);
-                        }else if args.len() >1 {
+                        }else if args.len() >1 { // if there are more than 1 argument its a wrong use of this command so error msg
                             println!("Trop d'arguments donnés pour history, réessayez avec un seul argument.")
-                        }else if let Ok(n)  = args[0].parse::<usize>() {
-                            cmd_history(n,&editor);
-                        }else{
+                        }else if let Ok(n)  = args[0].parse::<usize>() { // if there only one argument (0 and more than one are tested before) and if we can convert this argument in an usize 
+                            cmd_history(n,&editor); // we can send this n to the function for print n line of the history
+                        }else{ // else error msg
                             println!("{} n'est pas un argument valide pour history.",args[0] )
                         }
                         
                     },
-                    ["pwd",args@..] => {
-                        if !args.is_empty(){
-                            println!("Cette commande ne prend aucun argument en entrée");
-                        }else{
-                            cmd_pwd();
+                    ["pwd",args@..] => { //pwd command handler
+                        if !args.is_empty(){ // if there is at least one argument
+                            println!("Cette commande ne prend aucun argument en entrée"); //error msg
+                        }else{ // so if there is no argument
+                            cmd_pwd(); // execution of the function
                         }
                     }
-                    ["cd", args@..] =>{
-                        if args.is_empty(){
-                            continue;
-                        }else if args.len()>1{
-                            println!("Trop d'arguments donnés pour cd")
+                    ["cd", args@..] =>{ //cd command handler
+                        if args.is_empty(){ // if there are no arguments 
+                            continue; // we go nowhere we do nothing 
+                        }else if args.len()>1{ // if there is more than one argument
+                            println!("Trop d'arguments donnés pour cd") // error msg
                         }else{
-                            cmd_cd(args[0].to_string());
+                            cmd_cd(args[0].to_string()); // we send the path as a string in the function
                         }
                         
                     },
-                    _ => cmd_ext(&words,&paths), // if its not in the builtin we send the line into a external command function
+                    _ => cmd_ext(&words,&paths), // if its not in the builtin we send the line into a external command function (if you use autocompletion dont forget to write the extension of the file you wanna execute)
                 }
             }
             // we handle the potentials errors like ctrl-c or ctrl-d 
-            Err(ReadlineError::Interrupted) => continue,
-            Err(ReadlineError::Eof)=> return,
+            Err(ReadlineError::Interrupted) => continue, // ctrl-c
+            Err(ReadlineError::Eof)=> return, // ctrl-d
             Err(err)=>{
                 eprintln!("Reading error : {}",err);
                 return;
@@ -148,8 +147,10 @@ fn cmd_type(args: &[&str],paths: &Vec<String>){
     }
 }
 
-fn cmd_history(n : usize,edit : &Editor<HelpTab,FileHistory>){
-
+fn cmd_history(mut n : usize,edit : &Editor<HelpTab,FileHistory>){
+    if n > edit.history().len(){
+        n = edit.history().len();
+    }
     for (i, entry) in edit.history().iter().enumerate() {
         if i>= edit.history().len() -n || n==0{
             println!("{}  {}", i, entry);
