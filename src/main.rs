@@ -93,15 +93,24 @@ fn main() {
                         
                     },
                     ["ls",args@..]=>{
+                        let file_list : Vec<String>;
                         if args.is_empty(){
                             match std::env::current_dir(){
-                                Ok(path) => cmd_ls(&path.to_string_lossy().to_string()),                        
+                                Ok(path) => {
+                                    file_list = cmd_ls(&path.to_string_lossy().to_string());
+                                    for file in file_list{
+                                        println!("{}",file);
+                                    }
+                                }                        
                                 Err(e) => eprintln!("{}",e),
-   }
+                            }
                         }else if args.len()>1 {
                             eprintln!("Trop d'argument donnés pour ls")
                         }else {
-                            cmd_ls(args[0]);
+                            file_list = cmd_ls(args[0]);
+                            for file in file_list{
+                                println!("{}",file);
+                            }
                         }
                     }
                     _ => cmd_ext(&words,&paths), // if its not in the builtin we send the line into a external command function (if you use autocompletion dont forget to write the extension of the file you wanna execute)
@@ -212,7 +221,7 @@ fn cmd_cd(mut path : String){
     }
 }
 
-fn cmd_ls(path : &str){
+fn cmd_ls(path : &str) -> Vec<String>{
     match std::fs::read_dir(path){
         Ok(file_list)=>{
             let mut file_list_str = Vec::new();
@@ -226,12 +235,13 @@ fn cmd_ls(path : &str){
                 }
             }
             file_list_str.sort();
-            for file in file_list_str{
-                println!("{}",file)
-            }
+            return file_list_str;
             
         }
-        Err(e)=> eprintln!("ls : impossible de lire de les fichier de {} : {}",path,e),
+        Err(e)=> {
+            eprintln!("ls : impossible de lire de les fichier de {} : {}",path,e);
+            unimplemented!()
+        }
     }
 }
 
@@ -274,7 +284,7 @@ impl rustyline::completion::Completer for HelpTab{
             pos: usize,
             _ctx: &rustyline::Context<'_>,
         ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
-
+            let mut cd = false;
             let start : usize;
             let (avant,_) = line.split_at(pos);
             let maybe_space_pos= avant.rfind(' ');
@@ -289,7 +299,12 @@ impl rustyline::completion::Completer for HelpTab{
                 start = space_pos+1;
                 prefixe = avant[start..pos].to_string();
             }
-            (nb_match,suggestions) = search_match(&prefixe, self).unwrap();
+            if line.len()>1{
+                if &line[0..=1] == "cd"{
+                    cd = true;
+                }
+            }
+            (nb_match,suggestions) = search_match(cd,&prefixe, self).unwrap();
             if (!(self.already_tab.get()) )|| (!(*self.last_prefix.borrow() == prefixe)){
                 self.last_prefix.replace(prefixe.clone());
                 self.already_tab.set(false);
@@ -358,52 +373,65 @@ impl rustyline::completion::Completer for HelpTab{
 
 
 fn search_match(
+    cd : bool,
     prefixe: &String,
     helper: &HelpTab
 ) -> Result<(u64, Vec<Pair>), Error> {
     let mut nb_match: u64 = 0;
     let mut suggestions: Vec<Pair> = Vec::new();
-
-    // 1) Cherche dans les builtins
-    for builtin in &helper.builtins {
-        if builtin.starts_with(prefixe) {
-            nb_match += 1;
-            suggestions.push(Pair {
-                display: builtin.clone(),
-                replacement: format!("{} ", builtin),
-            });
+    if !cd{
+        for builtin in &helper.builtins {
+            if builtin.starts_with(prefixe) {
+                nb_match += 1;
+                suggestions.push(Pair {
+                    display: builtin.clone(),
+                    replacement: format!("{} ", builtin),
+                });
+            }
         }
+        if nb_match != 0 {
+            return Ok((nb_match, suggestions));
+        }
+    }
+    match std::env::current_dir(){
+        Ok(path) => {
+            let file_list = cmd_ls(&path.to_string_lossy().to_string());
+            for file in file_list{
+                if file.starts_with(prefixe){
+                    nb_match = nb_match+1;
+                    suggestions.push(Pair {
+                        display: file.clone(),
+                        replacement: format!("{} ", file),
+                    });
+                }
+            }
+        }                        
+        Err(_) => (),
     }
     if nb_match != 0 {
         return Ok((nb_match, suggestions));
     }
 
-    // 2) Aucun builtin ne matche : on cherche dans les répertoires PATH
     let path_value = env::var_os("PATH").unwrap();
     let dirs = env::split_paths(&path_value);
 
     for p in dirs {
-        // Récupère `p` comme PathBuf. On essaye de convertir en &str pour l'afficher/loguer, mais ce n'est pas nécessaire.
         let dir_path = p; // PathBuf
-        // Tenter d'ouvrir ce dossier :
         let read_dir_iter = match std::fs::read_dir(&dir_path) {
             Ok(iter) => iter,
-            Err(_) => continue, // dossier introuvable ou inaccessible : on passe au suivant
+            Err(_) => continue, 
         };
 
-        // Itérer sur les entrées de ce dossier
         for entry_result in read_dir_iter {
             let entry = match entry_result {
                 Ok(e) => e,
-                Err(_) => continue, // impossible de lire cette entrée, on l'ignore
+                Err(_) => continue, 
             };
 
-            // Récupère le nom de fichier en tant que &str (si possible)
            if let Some(os_name) = entry.file_name().to_str() {
                 let path = Path::new(os_name);         
                 if let Some(stem_os) = path.file_stem() {
                     if let Some(stem_str) = stem_os.to_str() {
-                        // stem_str = "fichier"
                         if stem_str.starts_with(prefixe) {
                             nb_match += 1;
                             suggestions.push(Pair {
@@ -417,7 +445,6 @@ fn search_match(
         }
     }
 
-    // 3) Retour selon le nombre de correspondances
     match nb_match {
         1 => Ok((nb_match, suggestions)),
         0 => Ok((0, Vec::new())),
