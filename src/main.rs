@@ -92,6 +92,18 @@ fn main() {
                         }
                         
                     },
+                    ["ls",args@..]=>{
+                        if args.is_empty(){
+                            match std::env::current_dir(){
+                                Ok(path) => cmd_ls(&path.to_string_lossy().to_string()),                        
+                                Err(e) => eprintln!("{}",e),
+   }
+                        }else if args.len()>1 {
+                            eprintln!("Trop d'argument donnés pour ls")
+                        }else {
+                            cmd_ls(args[0]);
+                        }
+                    }
                     _ => cmd_ext(&words,&paths), // if its not in the builtin we send the line into a external command function (if you use autocompletion dont forget to write the extension of the file you wanna execute)
                 }
             }
@@ -121,7 +133,7 @@ fn cmd_type(args: &[&str],paths: &Vec<String>){
         0 => return, // if there is nothing (the user only wrote type) we return and on the terminal will print the next line 
         1 =>{ // if there is one arg
             match args[0]{
-                "exit" | "echo" | "type" | "history" | "pwd" | "cd"=> println!("{} is a shell builtin", args[0]), // fisrt we look into the builtins list
+                "exit" | "echo" | "type" | "history" | "pwd" | "cd"| "ls"=> println!("{} is a shell builtin", args[0]), // fisrt we look into the builtins list
 
                 _ => {// if its not we gonna look into the dir to find if the command exist 
                         let mut found = false;
@@ -200,6 +212,29 @@ fn cmd_cd(mut path : String){
     }
 }
 
+fn cmd_ls(path : &str){
+    match std::fs::read_dir(path){
+        Ok(file_list)=>{
+            let mut file_list_str = Vec::new();
+            for os_file in file_list{
+                match os_file{
+                    Ok(file) =>{
+                        let os_name = file.file_name();
+                        file_list_str.push(os_name.to_string_lossy().to_string());
+                    },
+                    Err(_) => continue, 
+                }
+            }
+            file_list_str.sort();
+            for file in file_list_str{
+                println!("{}",file)
+            }
+            
+        }
+        Err(e)=> eprintln!("ls : impossible de lire de les fichier de {} : {}",path,e),
+    }
+}
+
 fn run_external(program_name: &str, args:&[&str]) {
     let _cmd = Command::new(program_name)
         .args(args)
@@ -221,6 +256,7 @@ impl HelpTab {
                 "history".to_string(),
                 "pwd".to_string(),
                 "cd".to_string(),
+                "ls".to_string(),
             ],
             last_prefix : RefCell::new(String::new()),
             already_tab : Cell::new(false),
