@@ -4,8 +4,8 @@ use rustyline::error::ReadlineError;
 use rustyline::history::DefaultHistory;
 use rustyline::Editor;
 use std::env;
-mod builtins;
 mod autocompletion;
+mod builtins;
 use autocompletion::HelpTab;
 use builtins::{cmd_cd, cmd_echo, cmd_ext, cmd_history, cmd_ls, cmd_pwd, cmd_type};
 
@@ -63,7 +63,7 @@ fn main() {
                     },
                     ["echo", args @ ..] => cmd_echo(args), // if the first word is echo i inject the rest of the line in the echo function
                     ["type", args @ ..] => cmd_type(args, &paths), // same with type but we also need the path for external commande
-                    ["history", args @ ..] => {
+                    ["history", args @ ..] => { //TODO gérer les nombre négatifs pour faire l'inverse (afficher les x premier si -x est écris)
                         //hsitory command handler
                         if args.is_empty() {
                             // if there is no argument that means we wxant to see all the history, so we put a 0 in the function and the function will understand

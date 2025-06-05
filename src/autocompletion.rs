@@ -1,4 +1,5 @@
 //All the imports
+use crate::builtins::cmd_ls;
 use anyhow::Error;
 use rustyline::completion::Pair;
 use rustyline_derive::{Helper, Highlighter, Hinter, Validator};
@@ -6,7 +7,6 @@ use std::cell::{Cell, RefCell};
 use std::env;
 use std::io::Write;
 use std::path::Path;
-use crate::builtins::cmd_ls;
 
 #[derive(Helper, Hinter, Highlighter, Validator)]
 pub struct HelpTab {
@@ -41,7 +41,7 @@ impl rustyline::completion::Completer for HelpTab {
         pos: usize,
         _ctx: &rustyline::Context<'_>,
     ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
-        let mut cd = false;
+        let mut skp_bltins = false;
         let start: usize;
         let (avant, _) = line.split_at(pos);
         let prefixe: String;
@@ -61,13 +61,13 @@ impl rustyline::completion::Completer for HelpTab {
         }
 
         if line.len() > 1 {
-            if &line[0..=1] == "cd" {
-                cd = true;
+            if &line[0..=1] == "cd" || &line[0..=1] == "ls"{
+                skp_bltins = true;
             }
-        }else if line.len() ==0 {
+        } else if line.len() == 0 {
             return Ok((start, Vec::new()));
         }
-        (nb_match, suggestions) = search_match(cd, &prefixe, self).unwrap();
+        (nb_match, suggestions) = search_match(skp_bltins, &prefixe, self).unwrap();
         if !self.already_tab.get() || *self.last_prefix.borrow() != prefixe {
             self.last_prefix.replace(prefixe.clone());
             self.already_tab.set(false);
@@ -109,7 +109,7 @@ impl rustyline::completion::Completer for HelpTab {
                     for suggestion in suggestions {
                         suggestions_list.push(suggestion.display);
                     }
-                    suggestions_list.sort();
+                    suggestions_list.sort(); //TODO rendre le tri plus robuste
                     for suggestion in suggestions_list {
                         all_suggestion = all_suggestion + &suggestion + "  ";
                     }
@@ -129,13 +129,13 @@ impl rustyline::completion::Completer for HelpTab {
 }
 
 pub fn search_match(
-    cd: bool,
+    skp_bltins: bool,
     prefixe: &String,
     helper: &HelpTab,
 ) -> Result<(u64, Vec<Pair>), Error> {
     let mut nb_match: u64 = 0;
     let mut suggestions: Vec<Pair> = Vec::new();
-    if !cd {
+    if !skp_bltins {
         for builtin in &helper.builtins {
             if builtin.starts_with(prefixe) {
                 nb_match += 1;

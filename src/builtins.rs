@@ -1,9 +1,9 @@
 //All the imports
-use rustyline::history::{FileHistory, History};
+use crate::autocompletion::HelpTab;
+use rustyline::history::{DefaultHistory, History};
 use rustyline::Editor;
 use std::path::Path;
 use std::process::Command;
-use crate::autocompletion::HelpTab;
 
 // its the echo command function which it call when the user write echo blabla in the terminal
 pub fn cmd_echo(args: &[&str]) {
@@ -52,7 +52,7 @@ pub fn cmd_type(args: &[&str], paths: &Vec<String>) {
     }
 }
 
-pub fn cmd_history(mut n: usize, edit: &Editor<HelpTab, FileHistory>) {
+pub fn cmd_history(mut n: usize, edit: &Editor<HelpTab, DefaultHistory>) {
     //history command function
     //INPUTS : n an usize : it is the number of line that the user wants to see; edit an editor : it got in memory the hiostory of the line
     if n > edit.history().len() {
@@ -102,11 +102,11 @@ pub fn cmd_ls(path: &str) -> Vec<String> {
                     Err(_) => continue,
                 }
             }
-            file_list_str.sort();
+            file_list_str.sort(); //TODO rentre le tri plus robuste
             return file_list_str;
         }
         Err(e) => {
-            eprintln!("ls : impossible de lire de les fichier de {} : {}", path, e);
+            eprintln!("ls : impossible de lire de les fichiers de {} : {}", path, e);
             return Vec::new();
         }
     }
@@ -128,12 +128,15 @@ pub fn cmd_ext(args: &[&str], paths: &Vec<String>) {
                 }
             }
             if !found {
-                println!("{}: programme not found", args[0]);
+                println!("{}: program not found", args[0]);
             }
         }
     }
 }
 
 pub fn run_external(program_name: &str, args: &[&str]) {
-    let _cmd = Command::new(program_name).args(args).status();
+    match Command::new(program_name).args(args).status(){
+        Ok(_) => (),
+        Err(e) => eprintln!("Erreur lors de l'execution de {} : {}",program_name,e),
+    };
 }
