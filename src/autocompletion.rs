@@ -61,7 +61,7 @@ impl rustyline::completion::Completer for HelpTab {
         }
 
         if line.len() > 1 {
-            if &line[0..=1] == "cd" || &line[0..=1] == "ls"{
+            if &line[0..=1] == "cd" || &line[0..=1] == "ls" {
                 skp_bltins = true;
             }
         } else if line.len() == 0 {

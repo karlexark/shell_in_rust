@@ -106,7 +106,10 @@ pub fn cmd_ls(path: &str) -> Vec<String> {
             return file_list_str;
         }
         Err(e) => {
-            eprintln!("ls : impossible de lire de les fichiers de {} : {}", path, e);
+            eprintln!(
+                "ls : impossible de lire de les fichiers de {} : {}",
+                path, e
+            );
             return Vec::new();
         }
     }
@@ -135,8 +138,8 @@ pub fn cmd_ext(args: &[&str], paths: &Vec<String>) {
 }
 
 pub fn run_external(program_name: &str, args: &[&str]) {
-    match Command::new(program_name).args(args).status(){
+    match Command::new(program_name).args(args).status() {
         Ok(_) => (),
-        Err(e) => eprintln!("Erreur lors de l'execution de {} : {}",program_name,e),
+        Err(e) => eprintln!("Erreur lors de l'execution de {} : {}", program_name, e),
     };
 }

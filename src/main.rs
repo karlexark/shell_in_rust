@@ -6,21 +6,12 @@ use rustyline::Editor;
 use std::env;
 mod autocompletion;
 mod builtins;
+mod tests_functions;
 use autocompletion::HelpTab;
 use builtins::{cmd_cd, cmd_echo, cmd_ext, cmd_history, cmd_ls, cmd_pwd, cmd_type};
+use tests_functions::{cmd_echo_test, cmd_type_test};
 
 fn main() {
-    // Editor and helper declaration
-    let mut editor = match Editor::<HelpTab, DefaultHistory>::new() {
-        Ok(edit) => edit,
-        Err(e) => {
-            eprintln!("Erreur à l'initialisation de l'Editor : {}", e);
-            return;
-        }
-    };
-    let helper = HelpTab::new();
-    editor.set_helper(Some(helper));
-    _ = editor.set_history_ignore_dups(false);
     let path_value = match env::var_os("PATH") {
         Some(path_val) => path_val,
         None => {
@@ -35,6 +26,29 @@ fn main() {
             paths.push(s.to_string());
         }
     }
+
+    //////////////////////////////////// TESTS /////////////////////////////////////////////////
+    // uncomment code below to test the functions
+    //
+    cmd_echo_test();
+    let existing_file = "README.txt";
+    let path_to_the_existing_file = "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\";
+    let not_existing_file = "oejexistepasetalors?.kestuvafaire?";
+    cmd_type_test(&paths,existing_file,path_to_the_existing_file,not_existing_file);
+    return;
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // Editor and helper declaration
+    let mut editor = match Editor::<HelpTab, DefaultHistory>::new() {
+        Ok(edit) => edit,
+        Err(e) => {
+            eprintln!("Erreur à l'initialisation de l'Editor : {}", e);
+            return;
+        }
+    };
+    let helper = HelpTab::new();
+    editor.set_helper(Some(helper));
+    _ = editor.set_history_ignore_dups(false);
 
     loop {
         // we set the line with a prompt ($ ) its what the user see when he start a line
@@ -63,7 +77,8 @@ fn main() {
                     },
                     ["echo", args @ ..] => cmd_echo(args), // if the first word is echo i inject the rest of the line in the echo function
                     ["type", args @ ..] => cmd_type(args, &paths), // same with type but we also need the path for external commande
-                    ["history", args @ ..] => { //TODO gérer les nombre négatifs pour faire l'inverse (afficher les x premier si -x est écris)
+                    ["history", args @ ..] => {
+                        //TODO gérer les nombre négatifs pour faire l'inverse (afficher les x premier si -x est écris)
                         //hsitory command handler
                         if args.is_empty() {
                             // if there is no argument that means we wxant to see all the history, so we put a 0 in the function and the function will understand
